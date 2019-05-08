@@ -44,8 +44,8 @@ function updateSlackStatus($status)
         'form_params' => [
             'token' => getenv('SLACK_TOKEN'),
             'profile' => json_encode([
-                'status_text' => $status,
-                'status_emoji' => ':hear_no_evil:'
+                'status_text' => "Now Listening To: " . $status,
+                'status_emoji' => ':musical_note:'
             ])
         ]
     ]);
