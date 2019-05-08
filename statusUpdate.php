@@ -45,7 +45,7 @@ function updateSlackStatus($status)
             'token' => getenv('SLACK_TOKEN'),
             'profile' => json_encode([
                 'status_text' => "Now Listening To: " . $status,
-                'status_emoji' => ':musical_note:'
+                'status_emoji' => getenv('STATUS_EMOJI') ?: ':musical_note:'
             ])
         ]
     ]);
