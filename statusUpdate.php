@@ -44,7 +44,7 @@ function updateSlackStatus($status)
         'form_params' => [
             'token' => getenv('SLACK_TOKEN'),
             'profile' => json_encode([
-                'status_text' => "Now Listening To: " . $status,
+                'status_text' => $status,
                 'status_emoji' => getenv('STATUS_EMOJI') ?: ':musical_note:'
             ])
         ]
@@ -66,9 +66,13 @@ $pcntl->on(SIGINT, function () {
 $loop->addPeriodicTimer(10, function () use (&$currentStatus) {
     $trackInfo = getTrackInfo();
     $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-    if ($currentStatus !== $status) {
-        updateSlackStatus($status);
-        $currentStatus = $status;
+    if (isset($trackInfo['nowplaying'])) {
+        if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
+            updateSlackStatus($status);
+            $currentStatus = $status;
+        }
+    } else {
+        updateSlackStatus('Not currently playing');
     }
 });
 
