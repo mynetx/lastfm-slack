@@ -7,6 +7,7 @@ use MKraemer\ReactPCNTL\PCNTL;
 use React\EventLoop\Factory;
 
 require_once 'vendor/autoload.php';
+require_once './emojiPicker.php';
 
 // Load .env file
 (new Dotenv\Dotenv(__DIR__))->load();
@@ -36,16 +37,17 @@ function getTrackInfo()
 /**
  * @param $status
  */
-function updateSlackStatus($status)
+function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 {
     echo $status . PHP_EOL;
+    $emoji = (new Emoji())->get($trackName, $trackArtist);
     $client = new Client();
     $client->post('https://slack.com/api/users.profile.set', [
         'form_params' => [
             'token' => getenv('SLACK_TOKEN'),
             'profile' => json_encode([
                 'status_text' => $status,
-                'status_emoji' => getenv('STATUS_EMOJI') ?: ':musical_note:'
+                'status_emoji' => $emoji
             ])
         ]
     ]);
@@ -53,7 +55,7 @@ function updateSlackStatus($status)
 
 $trackInfo = getTrackInfo();
 $currentStatus = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-updateSlackStatus($currentStatus);
+updateSlackStatus($currentStatus, $trackInfo['name'], $trackInfo['artist']['name']);
 
 $loop = Factory::create();
 $pcntl = new PCNTL($loop);
@@ -68,7 +70,7 @@ $loop->addPeriodicTimer(10, function () use (&$currentStatus) {
     $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
     if (isset($trackInfo['nowplaying'])) {
         if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
-            updateSlackStatus($status);
+            updateSlackStatus($status, $trackInfo['name'], $trackInfo['artist']['name']);
             $currentStatus = $status;
         }
     } else {
