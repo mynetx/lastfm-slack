@@ -30,7 +30,8 @@ function getTrackInfo()
         return $trackInfo[0];
     } catch (Exception $e) {
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
-        exit;
+        echo 'Reinitializing program' . PHP_EOL;
+        init();
     }
 }
 
@@ -53,29 +54,34 @@ function updateSlackStatus($status, $trackName = '', $trackArtist = '')
     ]);
 }
 
-$trackInfo = getTrackInfo();
-$currentStatus = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-updateSlackStatus($currentStatus, $trackInfo['name'], $trackInfo['artist']['name']);
-
-$loop = Factory::create();
-$pcntl = new PCNTL($loop);
-
-$pcntl->on(SIGINT, function () {
-    updateSlackStatus('Not currently playing');
-    die();
-});
-
-$loop->addPeriodicTimer(10, function () use (&$currentStatus) {
+function init()
+{
     $trackInfo = getTrackInfo();
-    $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-    if (isset($trackInfo['nowplaying'])) {
-        if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
-            updateSlackStatus($status, $trackInfo['name'], $trackInfo['artist']['name']);
-            $currentStatus = $status;
-        }
-    } else {
-        updateSlackStatus('Not currently playing');
-    }
-});
+    $currentStatus = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
+    updateSlackStatus($currentStatus, $trackInfo['name'], $trackInfo['artist']['name']);
 
-$loop->run();
+    $loop = Factory::create();
+    $pcntl = new PCNTL($loop);
+
+    $pcntl->on(SIGINT, function () {
+        updateSlackStatus('Not currently playing');
+        die();
+    });
+
+    $loop->addPeriodicTimer(10, function () use (&$currentStatus) {
+        $trackInfo = getTrackInfo();
+        $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
+        if (isset($trackInfo['nowplaying'])) {
+            if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
+                updateSlackStatus($status, $trackInfo['name'], $trackInfo['artist']['name']);
+                $currentStatus = $status;
+            }
+        } else {
+            updateSlackStatus('Not currently playing');
+        }
+    });
+
+    $loop->run();
+}
+
+init();
