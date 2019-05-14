@@ -3,10 +3,9 @@
 use GuzzleHttp\Client;
 use LastFmApi\Api\AuthApi;
 use LastFmApi\Api\UserApi;
-use MKraemer\ReactPCNTL\PCNTL;
-use React\EventLoop\Factory;
 
 require_once 'vendor/autoload.php';
+require_once './emojiPicker.php';
 
 // Load .env file
 (new Dotenv\Dotenv(__DIR__))->load();
@@ -28,48 +27,71 @@ function getTrackInfo()
         ]);
         return $trackInfo[0];
     } catch (Exception $e) {
+        echo $e . PHP_EOL;
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
-        exit;
+        echo 'Reinitializing program' . PHP_EOL;
+        init();
     }
 }
 
 /**
  * @param $status
  */
-function updateSlackStatus($status)
+function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 {
     echo $status . PHP_EOL;
+    $emoji = (new Emoji())->get($trackName, $trackArtist);
     $client = new Client();
-    $client->post('https://slack.com/api/users.profile.set', [
+    $response = $client->post('https://slack.com/api/users.profile.set', [
         'form_params' => [
             'token' => getenv('SLACK_TOKEN'),
             'profile' => json_encode([
                 'status_text' => $status,
-                'status_emoji' => ':hear_no_evil:'
+                'status_emoji' => $emoji
             ])
         ]
     ]);
+    if ($response->getStatusCode() === 429) {
+        echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
+        sleep(30);
+        init();
+    }
 }
 
-$trackInfo = getTrackInfo();
-$currentStatus = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-updateSlackStatus($currentStatus);
-
-$loop = Factory::create();
-$pcntl = new PCNTL($loop);
-
-$pcntl->on(SIGINT, function () {
-    updateSlackStatus('Not currently playing');
-    die();
-});
-
-$loop->addPeriodicTimer(10, function () use (&$currentStatus) {
+function getSlackStatus(&$currentStatus)
+{
     $trackInfo = getTrackInfo();
     $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
-    if ($currentStatus !== $status) {
-        updateSlackStatus($status);
-        $currentStatus = $status;
+    if (isset($trackInfo['nowplaying'])) {
+        if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
+            updateSlackStatus($status, $trackInfo['name'], $trackInfo['artist']['name']);
+            $currentStatus = $status;
+        }
+    } else {
+        updateSlackStatus('Not currently playing');
     }
-});
+}
 
-$loop->run();
+$currentStatus = '';
+
+function init()
+{
+    getSlackStatus($currentStatus);
+
+    $loop = React\EventLoop\Factory::create();
+
+    if (defined('SIGINT')) {
+        $loop->addSignal(SIGINT, function () {
+            updateSlackStatus('Not currently playing');
+            die();
+        });
+    }
+
+    $loop->addPeriodicTimer(10, function () use (&$currentStatus) {
+        getSlackStatus($currentStatus);
+    });
+
+    $loop->run();
+}
+
+init();
