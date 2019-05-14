@@ -8,7 +8,12 @@ require_once 'vendor/autoload.php';
 require_once './emojiPicker.php';
 
 // Load .env file
-(new Dotenv\Dotenv(__DIR__))->load();
+if (file_exists(".env")) {
+    (new Dotenv\Dotenv(__DIR__))->load();
+} else if (!getenv('LASTFM_KEY')) {
+    echo "No config setup." . PHP_EOL;
+    die();
+}
 
 
 /**
