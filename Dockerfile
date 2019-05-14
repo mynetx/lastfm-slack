@@ -9,7 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ 
 WORKDIR /app
 COPY composer.json composer.lock ./
 
-RUN composer install --ignore-platform-reqs --prefer-dist --no-scripts --no-dev --no-autoloader && rm -rf /root/.composer
+RUN composer install --ignore-platform-reqs --prefer-dist --no-scripts --no-dev && rm -rf /root/.composer
 COPY . ./
 
 CMD [ "php", "statusUpdate.php" ]
