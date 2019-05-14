@@ -7,7 +7,7 @@ This simple script let's you update your Slack status with the song you're curre
 1. Clone this repository.
 
 ```
-git clone https://github.com/mpociot/lastfm-slack.git
+git clone https://github.com/joshghent/lastfm-slack.git
 ```
 
 2. Run `composer install`.
@@ -17,6 +17,13 @@ git clone https://github.com/mpociot/lastfm-slack.git
 4. Run the script `php statusUpdate.php`
 
 5. Listen to some music :)
+
+### Installation via Docker
+After configuring a `.env` file with the required parameters, run the following command.
+Please note: Do not wrap your environment variables in quote " tags as this will mean the program does not work!
+```bash
+docker run -d --restart always --name lastfm2slack --env-file .env joshghent/lastfm2slack
+```
 
 ## Obtaining the Config tokens
 > Please note: Please place the config options in "" quote marks.
