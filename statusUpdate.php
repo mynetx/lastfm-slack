@@ -34,8 +34,10 @@ function getTrackInfo()
     } catch (Exception $e) {
         echo $e . PHP_EOL;
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
-        echo 'Reinitializing program' . PHP_EOL;
-        init();
+        if (getenv('RESTART') == true) {
+            echo 'Reinitializing program' . PHP_EOL;
+            init();
+        }
     }
 }
 
