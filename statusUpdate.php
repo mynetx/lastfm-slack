@@ -32,7 +32,6 @@ function getTrackInfo()
         ]);
         return $trackInfo[0];
     } catch (Exception $e) {
-        echo $e . PHP_EOL;
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
         if (getenv('RESTART') == true) {
             echo 'Reinitializing program' . PHP_EOL;
@@ -49,19 +48,27 @@ function updateSlackStatus($status, $trackName = '', $trackArtist = '')
     echo $status . PHP_EOL;
     $emoji = (new Emoji())->get($trackName, $trackArtist);
     $client = new Client();
-    $response = $client->post('https://slack.com/api/users.profile.set', [
-        'form_params' => [
-            'token' => getenv('SLACK_TOKEN'),
-            'profile' => json_encode([
-                'status_text' => $status,
-                'status_emoji' => $emoji
-            ])
-        ]
-    ]);
-    if ($response->getStatusCode() === 429) {
-        echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
-        sleep(30);
-        init();
+    try {
+        $response = $client->post('https://slack.com/api/users.profile.set', [
+            'form_params' => [
+                'token' => getenv('SLACK_TOKEN'),
+                'profile' => json_encode([
+                    'status_text' => $status,
+                    'status_emoji' => $emoji
+                ])
+            ]
+        ]);
+        if ($response->getStatusCode() === 429) {
+            echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
+            sleep(30);
+            init();
+        }
+    } catch (Exception $e) {
+        if ($e->getCode() === 429) {
+            echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
+            sleep(30);
+            init();
+        }
     }
 }
 
@@ -75,7 +82,11 @@ function getSlackStatus(&$currentStatus)
             $currentStatus = $status;
         }
     } else {
-        updateSlackStatus('Not currently playing');
+        $status = 'Not currently playing';
+        if ($currentStatus !== $status) {
+            updateSlackStatus($status);
+            $currentStatus = $status;
+        }
     }
 }
 
