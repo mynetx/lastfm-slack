@@ -33,10 +33,12 @@ function getTrackInfo()
         return $trackInfo[0];
     } catch (Exception $e) {
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
-        if (getenv('RESTART') == true) {
+        if (getenv('RESTART') === true) {
+            sleep(30);
             echo 'Reinitializing program' . PHP_EOL;
             init();
         }
+        throw $e;
     }
 }
 
@@ -74,7 +76,12 @@ function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 
 function getSlackStatus(&$currentStatus)
 {
-    $trackInfo = getTrackInfo();
+    try {
+        $trackInfo = getTrackInfo();
+    } catch (Exception $e) {
+        die();
+    }
+
     $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
     if (isset($trackInfo['nowplaying'])) {
         if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {

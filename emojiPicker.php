@@ -375,7 +375,8 @@ class Emoji
         array("weddings", ":wedding:"),
         array("drink", ":tropical_drink:"),
         array("city", ":cityscape"),
-        array("car", ":car:")
+        array("car", ":car:"),
+        array("sick", "")
     );
 
     public function get($trackName = '', $trackArtist = '')
