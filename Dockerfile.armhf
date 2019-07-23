@@ -1,4 +1,5 @@
 FROM arm32v7/php:7.3
+COPY qemu-arm-static /usr/bin/
 LABEL maintainer="Josh Ghent <me@joshghent.com>"
 
 RUN apt-get update && apt-get install zip git -y
