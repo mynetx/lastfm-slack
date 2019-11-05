@@ -376,7 +376,10 @@ class Emoji
         array("drink", ":tropical_drink:"),
         array("city", ":cityscape"),
         array("car", ":car:"),
-        array("sick", "")
+        array("sick", ":vomiting:"),
+        array("sad", ":sob:"),
+        array("dream", ":zzz:"),
+        array("dna", ":dna:")
     );
 
     public function get($trackName = '', $trackArtist = '')
