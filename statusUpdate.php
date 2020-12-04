@@ -49,21 +49,26 @@ function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 {
     echo $status . PHP_EOL;
     $emoji = (new Emoji())->get($trackName, $trackArtist);
+    if ($trackName === '') {
+        $emoji = '';
+    }
     $client = new Client();
     try {
-        $response = $client->post('https://slack.com/api/users.profile.set', [
-            'form_params' => [
-                'token' => getenv('SLACK_TOKEN'),
-                'profile' => json_encode([
-                    'status_text' => $status,
-                    'status_emoji' => $emoji
-                ])
-            ]
-        ]);
-        if ($response->getStatusCode() === 429) {
-            echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
-            sleep(30);
-            init();
+	for ($i = 1; $i <= 2; $i++) {
+            $response = $client->post('https://slack.com/api/users.profile.set', [
+                'form_params' => [
+                    'token' => getenv('SLACK_TOKEN_'.$i),
+                    'profile' => json_encode([
+                        'status_text' => $status,
+                        'status_emoji' => $emoji
+                    ])
+                ]
+            ]);
+            if ($response->getStatusCode() === 429) {
+                echo "Rate Limited by Slack API. Sleeping for 30 seconds before restarting." . PHP_EOL;
+                sleep(30);
+                init();
+            }
         }
     } catch (Exception $e) {
         if ($e->getCode() === 429) {
@@ -89,7 +94,7 @@ function getSlackStatus(&$currentStatus)
             $currentStatus = $status;
         }
     } else {
-        $status = 'Not currently playing';
+        $status = '';
         if ($currentStatus !== $status) {
             updateSlackStatus($status);
             $currentStatus = $status;
@@ -107,7 +112,7 @@ function init()
 
     if (defined('SIGINT')) {
         $loop->addSignal(SIGINT, function () {
-            updateSlackStatus('Not currently playing');
+            updateSlackStatus('');
             die();
         });
     }

@@ -36,11 +36,9 @@ docker run -d --restart always --name lastfm2slack --env-file .env joshghent/las
 4. Record these details as you cannot currently view them again!
 
 ### Getting the Slack Token
-1. Go to this page [here](https://api.slack.com/custom-integrations/legacy-tokens). Although Slack does not recommend using Legacy tokens, they are still heavily used and perfectly secure
-2. Scroll down to the "Legacy token generator" area
-3. Locate the Slack workspace you are looking to get a token for, click the "Request Token" button next to it (you may be prompted for a password)
-4. The token will appear in an input field to the left of the button. Copy this and paste it in "" as the SLACK_TOKEN
-
+1. Get your Slack app credentials from https://api.slack.com/apps.
+2. Call https://slack.com/oauth/v2/authorize?user_scope=users.profile:write&client_id=<CLIENT ID>&redirect_uri=http://www.example.com/
+3. with the result, call `curl -F code=<CALLBACK CODE> -F client_id=<CLIENT ID> -F client_secret=<CLIENT SECRET> https://slack.com/api/oauth.v2.access`
 
 ## Options
 
