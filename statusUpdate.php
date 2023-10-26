@@ -85,7 +85,7 @@ function getTrackInfo()
         $userAPI = new UserApi($auth);
         $trackInfo = $userAPI->getRecentTracks([
             'user' => $_ENV['LASTFM_USER'],
-           // 'limit' => '1',
+            'limit' => '1',
         ]);
 
         if (empty($trackInfo)) {
