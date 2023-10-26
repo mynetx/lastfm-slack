@@ -384,10 +384,6 @@ class Emoji
 
     public function get($trackName = '', $trackArtist = '')
     {
-        if (getenv('STATUS_EMOJI')) {
-            return getenv('STATUS_EMOJI');
-        }
-
         if ($trackName === '' && $trackArtist === '') {
             return ':musical_note:';
         }
@@ -397,7 +393,7 @@ class Emoji
         foreach ($stringsToCheck as $string) {
             foreach ($this->emojiMap as $index => $val) {
                 foreach ($val as $emojiName => $emojiString) {
-                    if (preg_match('/' . $val[0] . '/i', $string)) {
+                    if (strpos($val[0], $string) !== false) {
                         return $val[1];
                     }
                 }
