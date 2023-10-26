@@ -104,7 +104,7 @@ function getTrackInfo()
 function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 {
     echo $status . PHP_EOL;
-    $emoji = (new Emoji())->get($trackName, $trackArtist);
+    $emoji = $status !== '' ? (new Emoji())->get($trackName, $trackArtist) : '';
 
     $slackTokens = [
         $_ENV['SLACK_TOKEN_1'],
