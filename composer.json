@@ -9,7 +9,7 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^6.2",
-        "vlucas/phpdotenv": "^2.4",
+        "vlucas/phpdotenv": "^5.5",
         "matto1990/lastfm-api": "^1.5",
         "react/event-loop": "^1.1"
     },

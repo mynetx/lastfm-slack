@@ -9,7 +9,7 @@ require_once './emojiPicker.php';
 
 // Load .env file
 if (file_exists(".env")) {
-    (new Dotenv\Dotenv(__DIR__))->load();
+    (Dotenv\Dotenv::createImmutable(__DIR__))->load();
 } else if (!getenv('LASTFM_KEY')) {
     echo "No config setup." . PHP_EOL;
     die();
@@ -32,6 +32,7 @@ function getTrackInfo()
         ]);
         return $trackInfo[0];
     } catch (Exception $e) {
+        print_r($e);
         echo 'Unable to authenticate against Last.fm API.', PHP_EOL;
         if (getenv('RESTART') === true) {
             sleep(30);
@@ -87,7 +88,7 @@ function getSlackStatus(&$currentStatus)
         die();
     }
 
-    $status = $trackInfo['artist']['name'] . ' - ' . $trackInfo['name'];
+    $status = $trackInfo['artist']['name'] . ' – ' . $trackInfo['name'];
     if (isset($trackInfo['nowplaying'])) {
         if ($trackInfo['nowplaying'] === true && $currentStatus !== $status) {
             updateSlackStatus($status, $trackInfo['name'], $trackInfo['artist']['name']);
