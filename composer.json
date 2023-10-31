@@ -11,7 +11,8 @@
         "guzzlehttp/guzzle": "^6.2",
         "vlucas/phpdotenv": "^5.5",
         "matto1990/lastfm-api": "^1.5",
-        "react/event-loop": "^1.1"
+        "react/event-loop": "^1.1",
+      "ext-json": "*"
     },
     "bin": [
         "lastfm2slack"

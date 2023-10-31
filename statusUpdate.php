@@ -103,8 +103,12 @@ function getTrackInfo()
 // Function to update Slack status
 function updateSlackStatus($status, $trackName = '', $trackArtist = '')
 {
-    echo $status . PHP_EOL;
-    $emoji = $status !== '' ? (new Emoji())->get($trackName, $trackArtist) : '';
+    $emoji = '';
+
+    if ($status !== '') {
+        echo $status . PHP_EOL;
+        $emoji = (new Emoji())->get($trackName, $trackArtist);
+    }
 
     $slackTokens = [
         $_ENV['SLACK_TOKEN_1'],
@@ -118,8 +122,8 @@ function updateSlackStatus($status, $trackName = '', $trackArtist = '')
                 'form_params' => [
                     'token' => $token,
                     'profile' => json_encode([
-                        'status_text' => $status,
-                        'status_emoji' => $emoji,
+                        'status_text' => $status, // Set status_text to empty string when no music is playing
+                        'status_emoji' => $emoji,  // Set status_emoji to empty string when no music is playing
                     ]),
                 ],
             ]);
